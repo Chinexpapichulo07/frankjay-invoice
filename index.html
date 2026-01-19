@@ -6,9 +6,8 @@
     <title>Frankjay Ventures E-Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* === THEME COLOR CHANGED TO PINK === */
-        /* This hex code #F5C3C6 matches the attached image */
-        :root { --theme-color: #F5C3C6; } 
+        /* RESTORED BLUE THEME COLOR */
+        :root { --theme-color: #003366; } 
         
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
         
@@ -22,8 +21,7 @@
             font-weight: bold; font-size: 14px; 
         }
         .btn-add { background-color: #28a745; color: white; }
-        /* The Download button will now be pink */
-        .btn-download { background-color: var(--theme-color); color: black; }
+        .btn-download { background-color: var(--theme-color); color: white; }
 
         /* INVOICE PAPER */
         #invoice-card { 
@@ -31,27 +29,20 @@
             width: 794px; /* A4 Width */
             min-height: 1123px; /* A4 Height */
             margin: 0 auto; 
-            padding: 40px; 
+            padding: 40px; /* Reduced padding slightly to fit everything */
             box-sizing: border-box; 
             border: 1px solid #ccc; 
-            /* Main text color is now pink */
-            color: var(--theme-color); 
+            color: var(--theme-color); /* TEXT IS BLUE AGAIN */
         }
 
         /* Header */
-        .header { 
-            display: flex; justify-content: space-between; align-items: flex-start; 
-            /* Header border is now pink */
-            border-bottom: 3px solid var(--theme-color); 
-            padding-bottom: 10px; margin-bottom: 20px;
-        }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--theme-color); padding-bottom: 10px; margin-bottom: 20px;}
         .logo-placeholder-img { max-width: 300px; max-height: 100px; display: block; }
         .address-area { text-align: right; font-size: 13px; line-height: 1.4; color: black; }
         
         /* Meta Info */
         .meta-info { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;}
         .input-group { font-size: 16px; font-weight: bold; display: flex; align-items: center; flex-grow: 1; margin-right: 20px; color: black;}
-        /* Input underlines are now pink */
         .input-underline { border-bottom: 1px solid var(--theme-color); flex-grow: 1; margin-left: 10px; }
         .input-group input { border: none; width: 100%; outline: none; font-size: 16px; font-family: inherit; padding: 5px; font-weight: bold; color: black;}
 
@@ -69,9 +60,8 @@
         .col-del { width: 30px; border: none !important; }
 
         th { 
-            background-color: #fdf2f3; /* Very light pink BG for header */
-            /* Table borders are now pink */
-            border: 1px solid var(--theme-color); 
+            background-color: #eef6fc; /* Light Blue BG */
+            border: 1px solid var(--theme-color); /* Blue Border */
             color: var(--theme-color);
             padding: 12px; 
             text-align: left; 
@@ -81,7 +71,7 @@
         }
         
         td { 
-            border: 1px solid var(--theme-color); 
+            border: 1px solid var(--theme-color); /* Blue Border */
             padding: 12px; 
             vertical-align: middle; 
             font-size: 15px;
@@ -91,15 +81,17 @@
         /* INPUTS INSIDE TABLE */
         input.cell-input { width: 100%; border: none; outline: none; font-size: 15px; background: transparent; }
 
-        /* === TOTAL ROW === */
+        /* === TOTAL ROW (FIXED) === */
+        /* Now has borders and sits inside the column */
         tfoot tr td {
-            border: 1px solid var(--theme-color) !important; 
-            background-color: #fdf2f3; /* Very light pink BG */
+            border: 1px solid var(--theme-color) !important; /* Forces border to show */
+            background-color: #eef6fc; /* Light blue background for emphasis */
             padding-top: 15px;
             padding-bottom: 15px;
             color: var(--theme-color);
         }
 
+        /* Remove border for the empty delete column only */
         tfoot tr td:last-child { border: none !important; background: transparent; }
 
         .total-label { 
@@ -118,7 +110,7 @@
 
         /* Footer Note & Signature */
         .footer-note { 
-            margin-top: 30px; 
+            margin-top: 30px; /* Reduced gap (was 80px) */
             font-size: 13px; 
             font-style: italic; 
             color: black; 
@@ -126,7 +118,6 @@
         
         .signature-line {
             margin-top: 50px;
-            /* Signature line is now pink */
             border-top: 2px solid var(--theme-color);
             width: 250px;
             text-align: center;
@@ -189,7 +180,9 @@
             <tfoot>
                 <tr>
                     <td colspan="2" class="total-label">TOTAL ₦</td> 
+                    
                     <td class="total-value"><span id="grandTotal">0</span></td>
+                    
                     <td></td> 
                 </tr>
             </tfoot>
