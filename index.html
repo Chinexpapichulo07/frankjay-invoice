@@ -75,28 +75,31 @@
         input.cell-input { width: 100%; border: none; outline: none; background: transparent; font-size: 16px; font-family: inherit; }
         .amt-input { text-align: right; }
 
-        /* Total Section */
-        .total-row-container { 
-            display: flex; justify-content: flex-end; margin-top: -2px; /* Overlap header border */
-        }
-        .total-label {
-            background-color: var(--theme-bg-light);
+/* REPLACEMENT CSS FOR TOTAL SECTION */
+        tfoot td {
+            background-color: var(--theme-bg-light); /* Matches header color */
             border: 2px solid var(--theme-color);
-            border-top: none;
-            padding: 12px; font-weight: bold; font-size: 18px;
-            text-align: right;
-             width: calc(100% - 140px - 50px - 40px); /* Rough calculation to align with desc column */
-        }
-        .total-amount-box {
-             background-color: var(--theme-bg-light);
-             border: 2px solid var(--theme-color);
-             border-top: none; border-left: none;
-             padding: 12px; font-weight: bold; font-size: 20px; text-align: right;
-             width: 140px; /* Matches col-amt width */
+            padding: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--theme-color);
         }
         
-        /* Footer */
-        .footer-note { margin-top: 50px; font-size: 13px; font-style: italic; color: #555; border-top: 1px solid #eee; padding-top: 15px; }
+        .total-label {
+            text-align: right; 
+            letter-spacing: 1px;
+        }
+
+        .total-amount {
+            text-align: right;
+            font-size: 20px;
+        }
+
+        /* Clean up the empty space under the 'delete' buttons */
+        tfoot .no-print-cell {
+            border: none !important;
+            background: transparent !important;
+        }
         
         /* Utilities for interactive parts */
         .no-print-cell { border: none !important; width: 30px; background: transparent; }
