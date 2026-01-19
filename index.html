@@ -6,14 +6,13 @@
     <title>Frankjay Ventures E-Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* DEFINE THE THEME COLOR HERE - Matches the blue ink from the original paper */
         :root { --theme-color: #003366; --theme-bg-light: #eef6fc; }
         
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; padding: 20px; }
         
-        /* Dashboard Controls Styling */
+        /* Dashboard Controls */
         .controls { 
-            max-width: 800px; margin: 0 auto 20px auto; background: #fff; 
+            max-width: 794px; margin: 0 auto 20px auto; background: #fff; 
             padding: 15px; border-radius: 8px; display: flex; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         button { 
@@ -21,89 +20,66 @@
             font-weight: bold; font-size: 14px; transition: background 0.2s;
         }
         .btn-add { background-color: #28a745; color: white; }
-        .btn-add:hover { background-color: #218838; }
         .btn-download { background-color: var(--theme-color); color: white; }
-        .btn-download:hover { background-color: #002244; }
 
-        /* === INVOICE PAPER STYLING === */
+        /* INVOICE PAPER */
         #invoice-card { 
             background: white; 
-            width: 794px; /* Fixed width matching A4 proportions to prevent clipping */
-            min-height: 1123px; 
+            width: 794px; /* A4 Width */
+            min-height: 1123px; /* A4 Height */
             margin: 0 auto; 
             padding: 40px; 
             box-sizing: border-box; 
             border: 1px solid #ddd; 
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            color: var(--theme-color); /* Apply theme color to text */
+            color: var(--theme-color);
         }
 
-        /* Header and Logo Area */
+        /* Header */
         .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--theme-color); padding-bottom: 15px; }
-        .logo-placeholder-img {
-            max-width: 300px;
-            height: auto;
-            display: block;
-            /* Temporary border to show where logo goes - remove later */
-            border: 2px dashed #ccc; 
-        }
+        .logo-placeholder-img { max-width: 300px; height: auto; display: block; }
         .address-area { text-align: right; font-size: 13px; line-height: 1.5; color: black; }
         .address-area strong { color: var(--theme-color); }
 
-        /* Customer and Date Section */
+        /* Meta Info */
         .meta-info { margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-end;}
         .input-group { font-size: 18px; font-weight: bold; display: flex; align-items: center; flex-grow: 1; margin-right: 20px; }
         .input-underline { border-bottom: 2px solid var(--theme-color); flex-grow: 1; margin-left: 10px; }
         .input-group input { border: none; width: 100%; outline: none; font-size: 18px; font-weight: normal; font-family: inherit; color: black; padding: 5px;}
 
         /* Table Styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; table-layout: fixed; }
         th { 
-            background-color: var(--theme-bg-light); /* Light blue background for headers */
+            background-color: var(--theme-bg-light); 
             color: var(--theme-color);
             border: 2px solid var(--theme-color); 
-            padding: 12px; text-align: left; font-weight: bold; letter-spacing: 0.5px;
+            padding: 12px; text-align: left; font-weight: bold; 
         }
-        td { border: 2px solid var(--theme-color); padding: 10px; color: black; vertical-align: top; }
+        td { border: 2px solid var(--theme-color); padding: 10px; color: black; vertical-align: middle; }
         
-        /* Column Widths */
+        /* Specific Columns */
         .col-sn { width: 50px; text-align: center; }
-        .col-desc { }
-        .col-amt { width: 140px; text-align: right; }
-        
-        /* Input fields inside table */
+        .col-amt { width: 150px; text-align: right; }
+        .col-del { width: 40px; border: none !important; background: transparent; }
+
+        /* Inputs */
         input.cell-input { width: 100%; border: none; outline: none; background: transparent; font-size: 16px; font-family: inherit; }
         .amt-input { text-align: right; }
 
-/* REPLACEMENT CSS FOR TOTAL SECTION */
-        tfoot td {
-            background-color: var(--theme-bg-light); /* Matches header color */
+        /* TOTAL ROW STYLING - This ensures it fits the grid */
+        tr.total-row td {
+            background-color: var(--theme-bg-light);
             border: 2px solid var(--theme-color);
-            padding: 12px;
             font-weight: bold;
-            font-size: 18px;
             color: var(--theme-color);
+            font-size: 18px;
         }
-        
-        .total-label {
-            text-align: right; 
-            letter-spacing: 1px;
-        }
+        .total-label { text-align: right; letter-spacing: 1px; }
+        .total-amount { text-align: right; }
 
-        .total-amount {
-            text-align: right;
-            font-size: 20px;
-        }
-
-        /* Clean up the empty space under the 'delete' buttons */
-        tfoot .no-print-cell {
-            border: none !important;
-            background: transparent !important;
-        }
-        
-        /* Utilities for interactive parts */
-        .no-print-cell { border: none !important; width: 30px; background: transparent; }
-        .delete-btn { color: #dc3545; cursor: pointer; font-weight: bold; font-size: 20px; padding: 0 10px;}
+        /* Footer Note */
+        .footer-note { margin-top: 50px; font-size: 13px; font-style: italic; color: #555; border-top: 1px solid #eee; padding-top: 15px; }
+        .delete-btn { color: #dc3545; cursor: pointer; font-weight: bold; font-size: 20px; }
     </style>
 </head>
 <body>
@@ -116,8 +92,8 @@
     <div id="invoice-card">
         <div class="header">
             <div class="logo-area">
-                <img src="frankjayv-logo.png" alt="Frankjay Ventures Logo" class="logo-placeholder-img" id="companyLogo">
-                </div>
+                <img src="frankjayv-logo" alt="Frankjay Ventures Logo" class="logo-placeholder-img" id="companyLogo" onerror="this.style.display='none'">
+            </div>
             <div class="address-area">
                 <strong>9, Adepele Street, Off Simbiat Abiola Way,</strong><br>
                 Ikeja, Lagos.<br>
@@ -128,7 +104,7 @@
 
         <div class="meta-info">
             <div class="input-group">
-                M: <div class="input-underline"><input type="text" id="customerName" placeholder="Customer Name / Gems Consulting"></div>
+                M: <div class="input-underline"><input type="text" id="customerName" placeholder="Customer Name"></div>
             </div>
             <div class="input-group" style="flex-grow: 0;">
                 Date: <div class="input-underline"><input type="date" id="invDate"></div>
@@ -139,61 +115,65 @@
             <thead>
                 <tr>
                     <th class="col-sn">S/N</th>
-                    <th class="col-desc">DESCRIPTION OF GOODS/JOBS</th>
+                    <th>DESCRIPTION OF GOODS/JOBS</th>
                     <th class="col-amt">AMOUNT (₦)</th>
-                    <th class="no-print-cell"></th> </tr>
+                    <th class="col-del"></th>
+                </tr>
             </thead>
             <tbody>
                 <tr>
                     <td class="col-sn">1</td>
                     <td><input type="text" class="cell-input" placeholder="Item description"></td>
                     <td><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0.00"></td>
-                    <td class="no-print-cell"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
+                    <td class="col-del"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr class="total-row">
+                    <td style="border-right: none;"></td> 
+                    <td class="total-label" style="border-left: none;">TOTAL ₦</td>
+                    <td class="total-amount" id="grandTotal">0.00</td>
+                    <td class="col-del"></td>
                 </tr>
             </tbody>
         </table>
 
-        <div class="total-row-container">
-            <div class="total-label">TOTAL ₦</div>
-            <div class="total-amount-box" id="grandTotal">0.00</div>
-         </div>
-
         <div class="footer-note">
             Goods sold in good condition are not returnable. <br>
             No refund of money after payment. Thanks.
-            <div style="margin-top: 40px; border-top: 2px solid var(--theme-color); width: 200px; text-align: center; padding-top: 5px;">Customer's Signature</div>
+            <div style="margin-top: 40px; border-top: 2px solid var(--theme-color); width: 200px; text-align: center; padding-top: 5px; color: black;">Customer's Signature</div>
         </div>
     </div>
 
     <script>
-        // Set default date to today
         document.getElementById('invDate').valueAsDate = new Date();
 
         function addRow() {
-            const table = document.getElementById("itemsTable").getElementsByTagName('tbody')[0];
-            const rowCount = table.rows.length;
-            const row = table.insertRow(rowCount);
+            // Find the first tbody (items)
+            const tbody = document.getElementById("itemsTable").tBodies[0];
+            const rowCount = tbody.rows.length;
+            const row = tbody.insertRow(rowCount);
             
             row.innerHTML = `
                 <td class="col-sn">${rowCount + 1}</td>
                 <td><input type="text" class="cell-input"></td>
                 <td><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0.00"></td>
-                <td class="no-print-cell"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
+                <td class="col-del"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
             `;
         }
 
         function deleteRow(btn) {
             const row = btn.parentNode.parentNode;
-            const table = row.parentNode;
-            if(table.rows.length > 1) {
-                table.removeChild(row);
+            const tbody = row.parentNode;
+            if(tbody.rows.length > 1) {
+                tbody.removeChild(row);
                 calculateTotal();
                 reorderSN();
             }
         }
 
         function reorderSN() {
-            const rows = document.getElementById("itemsTable").getElementsByTagName('tbody')[0].rows;
+            const rows = document.getElementById("itemsTable").tBodies[0].rows;
             for(let i=0; i<rows.length; i++) {
                 rows[i].cells[0].innerHTML = i + 1;
             }
@@ -206,7 +186,6 @@
                 const val = parseFloat(input.value);
                 total += isNaN(val) ? 0 : val;
             });
-            // Format with commas and 2 decimal places
             document.getElementById('grandTotal').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
@@ -215,13 +194,12 @@
             const customerRaw = document.getElementById('customerName').value;
             const customer = customerRaw ? customerRaw.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
             
-            // Hide UI elements before generating
-            const deleteButtons = document.querySelectorAll('.no-print-cell');
+            // Hide delete buttons
+            const deleteButtons = document.querySelectorAll('.col-del');
             deleteButtons.forEach(el => el.style.visibility = 'hidden');
-            document.getElementById('companyLogo').style.border = 'none'; // Remove temp border
 
             const opt = {
-                margin: [0, 0, 0, 0], // No margins needed as the container has padding
+                margin: 0,
                 filename: `Frankjay_Invoice_${customer}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
@@ -229,9 +207,7 @@
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                 // Show UI elements again
                 deleteButtons.forEach(el => el.style.visibility = 'visible');
-                document.getElementById('companyLogo').style.border = ''; 
             });
         }
     </script>
