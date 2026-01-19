@@ -6,68 +6,163 @@
     <title>Frankjay Ventures E-Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --main-color: #000; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; padding: 10px; }
+        /* DEFINE THE THEME COLOR HERE - Matches the blue ink from the original paper */
+        :root { --theme-color: #003366; --theme-bg-light: #eef6fc; }
         
-        /* Dashboard Styling */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; padding: 20px; }
+        
+        /* Dashboard Controls Styling */
         .controls { 
             max-width: 800px; margin: 0 auto 20px auto; background: #fff; 
-            padding: 15px; border-radius: 8px; display: flex; gap: 10px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px; border-radius: 8px; display: flex; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         button { 
-            padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; 
-            font-weight: bold; font-size: 16px;
+            padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; 
+            font-weight: bold; font-size: 14px; transition: background 0.2s;
         }
         .btn-add { background-color: #28a745; color: white; }
-        .btn-download { background-color: #007bff; color: white; }
+        .btn-add:hover { background-color: #218838; }
+        .btn-download { background-color: var(--theme-color); color: white; }
+        .btn-download:hover { background-color: #002244; }
 
-        /* Invoice Paper Styling */
+        /* === INVOICE PAPER STYLING === */
         #invoice-card { 
-            background: white; width: 210mm; min-height: 140mm; 
-            margin: 0 auto; padding: 40px; box-sizing: border-box; 
-            border: 1px solid #ddd; position: relative;
+            background: white; 
+            width: 794px; /* Fixed width matching A4 proportions to prevent clipping */
+            min-height: 1123px; 
+            margin: 0 auto; 
+            padding: 40px; 
+            box-sizing: border-box; 
+            border: 1px solid #ddd; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            color: var(--theme-color); /* Apply theme color to text */
         }
-        .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--main-color); padding-bottom: 10px; }
-        .logo-area h1 { margin: 0; font-size: 32px; letter-spacing: 1px; }
-        .logo-area p { margin: 0; font-size: 14px; font-weight: bold; }
-        .address-area { text-align: right; font-size: 12px; line-height: 1.4; }
 
-        .meta-info { margin-top: 20px; display: flex; justify-content: space-between; }
-        .input-group { font-size: 18px; font-weight: bold; border-bottom: 1px solid #000; flex-grow: 1; margin-right: 20px; }
-        .input-group input { border: none; width: 80%; outline: none; font-size: 18px; }
+        /* Header and Logo Area */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--theme-color); padding-bottom: 15px; }
+        .logo-placeholder-img {
+            max-width: 300px;
+            height: auto;
+            display: block;
+            /* Temporary border to show where logo goes - remove later */
+            border: 2px dashed #ccc; 
+        }
+        .address-area { text-align: right; font-size: 13px; line-height: 1.5; color: black; }
+        .address-area strong { color: var(--theme-color); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #eee; border: 1px solid #000; padding: 10px; text-align: left; }
-        td { border: 1px solid #000; padding: 8px; }
-        .col-sn { width: 50px; }
-        .col-amt { width: 150px; text-align: right; }
-        
-        input.cell-input { width: 100%; border: none; outline: none; background: transparent; font-size: 16px; }
-        .total-section { text-align: right; margin-top: 20px; font-size: 22px; font-weight: bold; }
-        
-        .footer-note { margin-top: 30px; font-size: 12px; font-style: italic; border-top: 1px solid #eee; padding-top: 10px; }
-        
-        /* Hide buttons during PDF generation */
-        .no-print-cell { border: none !important; width: 30px; }
-        .delete-btn { color: red; cursor: pointer; font-weight: bold; }
-    <style>
-    /* Add this to your existing CSS */
-    #invoice-card { 
-        background: white; 
-        width: 800px; /* Fixed width to prevent clipping */
-        margin: 0 auto; 
-        padding: 30px; 
-        box-sizing: border-box; 
-        border: 1px solid #ddd;
-    }
-    
-    /* Ensure the table doesn't overflow */
-    table { table-layout: fixed; word-wrap: break-word; }
-    .col-amt { width: 120px; }
-</style>
+        /* Customer and Date Section */
+        .meta-info { margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-end;}
+        .input-group { font-size: 18px; font-weight: bold; display: flex; align-items: center; flex-grow: 1; margin-right: 20px; }
+        .input-underline { border-bottom: 2px solid var(--theme-color); flex-grow: 1; margin-left: 10px; }
+        .input-group input { border: none; width: 100%; outline: none; font-size: 18px; font-weight: normal; font-family: inherit; color: black; padding: 5px;}
 
-<script>
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th { 
+            background-color: var(--theme-bg-light); /* Light blue background for headers */
+            color: var(--theme-color);
+            border: 2px solid var(--theme-color); 
+            padding: 12px; text-align: left; font-weight: bold; letter-spacing: 0.5px;
+        }
+        td { border: 2px solid var(--theme-color); padding: 10px; color: black; vertical-align: top; }
+        
+        /* Column Widths */
+        .col-sn { width: 50px; text-align: center; }
+        .col-desc { }
+        .col-amt { width: 140px; text-align: right; }
+        
+        /* Input fields inside table */
+        input.cell-input { width: 100%; border: none; outline: none; background: transparent; font-size: 16px; font-family: inherit; }
+        .amt-input { text-align: right; }
+
+        /* Total Section */
+        .total-row-container { 
+            display: flex; justify-content: flex-end; margin-top: -2px; /* Overlap header border */
+        }
+        .total-label {
+            background-color: var(--theme-bg-light);
+            border: 2px solid var(--theme-color);
+            border-top: none;
+            padding: 12px; font-weight: bold; font-size: 18px;
+            text-align: right;
+             width: calc(100% - 140px - 50px - 40px); /* Rough calculation to align with desc column */
+        }
+        .total-amount-box {
+             background-color: var(--theme-bg-light);
+             border: 2px solid var(--theme-color);
+             border-top: none; border-left: none;
+             padding: 12px; font-weight: bold; font-size: 20px; text-align: right;
+             width: 140px; /* Matches col-amt width */
+        }
+        
+        /* Footer */
+        .footer-note { margin-top: 50px; font-size: 13px; font-style: italic; color: #555; border-top: 1px solid #eee; padding-top: 15px; }
+        
+        /* Utilities for interactive parts */
+        .no-print-cell { border: none !important; width: 30px; background: transparent; }
+        .delete-btn { color: #dc3545; cursor: pointer; font-weight: bold; font-size: 20px; padding: 0 10px;}
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button class="btn-add" onclick="addRow()">+ Add Item</button>
+        <button class="btn-download" onclick="generatePDF()">Download PDF</button>
+    </div>
+
+    <div id="invoice-card">
+        <div class="header">
+            <div class="logo-area">
+                <img src="https://placehold.co/300x80/eef6fc/003366?text=FRANKJAY+VENTURES+LOGO" alt="Frankjay Ventures Logo" class="logo-placeholder-img" id="companyLogo">
+                </div>
+            <div class="address-area">
+                <strong>9, Adepele Street, Off Simbiat Abiola Way,</strong><br>
+                Ikeja, Lagos.<br>
+                Tel: 080-2314-3506, 070-5512-0916<br>
+                Email: frankjayventures@yahoo.com
+            </div>
+        </div>
+
+        <div class="meta-info">
+            <div class="input-group">
+                M: <div class="input-underline"><input type="text" id="customerName" placeholder="Customer Name / Gems Consulting"></div>
+            </div>
+            <div class="input-group" style="flex-grow: 0;">
+                Date: <div class="input-underline"><input type="date" id="invDate"></div>
+            </div>
+        </div>
+
+        <table id="itemsTable">
+            <thead>
+                <tr>
+                    <th class="col-sn">S/N</th>
+                    <th class="col-desc">DESCRIPTION OF GOODS/JOBS</th>
+                    <th class="col-amt">AMOUNT (₦)</th>
+                    <th class="no-print-cell"></th> </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-sn">1</td>
+                    <td><input type="text" class="cell-input" placeholder="Item description"></td>
+                    <td><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0.00"></td>
+                    <td class="no-print-cell"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="total-row-container">
+            <div class="total-label">TOTAL ₦</div>
+            <div class="total-amount-box" id="grandTotal">0.00</div>
+         </div>
+
+        <div class="footer-note">
+            Goods sold in good condition are not returnable. <br>
+            No refund of money after payment. Thanks.
+            <div style="margin-top: 40px; border-top: 2px solid var(--theme-color); width: 200px; text-align: center; padding-top: 5px;">Customer's Signature</div>
+        </div>
+    </div>
+
+    <script>
         // Set default date to today
         document.getElementById('invDate').valueAsDate = new Date();
 
@@ -77,18 +172,21 @@
             const row = table.insertRow(rowCount);
             
             row.innerHTML = `
-                <td>${rowCount + 1}</td>
+                <td class="col-sn">${rowCount + 1}</td>
                 <td><input type="text" class="cell-input"></td>
-                <td><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0"></td>
+                <td><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0.00"></td>
                 <td class="no-print-cell"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
             `;
         }
 
         function deleteRow(btn) {
             const row = btn.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-            calculateTotal();
-            reorderSN();
+            const table = row.parentNode;
+            if(table.rows.length > 1) {
+                table.removeChild(row);
+                calculateTotal();
+                reorderSN();
+            }
         }
 
         function reorderSN() {
@@ -102,36 +200,37 @@
             let total = 0;
             const inputs = document.querySelectorAll('.amt-input');
             inputs.forEach(input => {
-                total += Number(input.value) || 0;
+                const val = parseFloat(input.value);
+                total += isNaN(val) ? 0 : val;
             });
-            document.getElementById('grandTotal').innerText = total.toLocaleString();
+            // Format with commas and 2 decimal places
+            document.getElementById('grandTotal').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
         function generatePDF() {
-        const element = document.getElementById('invoice-card');
-        const customer = document.getElementById('customerName').value || 'Customer';
-        
-        // Temporarily hide UI elements
-        const deleteButtons = document.querySelectorAll('.no-print-cell');
-        deleteButtons.forEach(el => el.style.display = 'none');
+            const element = document.getElementById('invoice-card');
+            const customerRaw = document.getElementById('customerName').value;
+            const customer = customerRaw ? customerRaw.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
+            
+            // Hide UI elements before generating
+            const deleteButtons = document.querySelectorAll('.no-print-cell');
+            deleteButtons.forEach(el => el.style.visibility = 'hidden');
+            document.getElementById('companyLogo').style.border = 'none'; // Remove temp border
 
-        const opt = {
-            margin: [10, 10, 10, 10], // Top, left, bot, right margins
-            filename: `Frankjay_Invoice_${customer}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                letterRendering: true 
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+            const opt = {
+                margin: [0, 0, 0, 0], // No margins needed as the container has padding
+                filename: `Frankjay_Invoice_${customer}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-        // Use the "Scale to Fit" approach
-        html2pdf().set(opt).from(element).save().then(() => {
-            deleteButtons.forEach(el => el.style.display = '');
-        });
-    }
-</script>
+            html2pdf().set(opt).from(element).save().then(() => {
+                 // Show UI elements again
+                deleteButtons.forEach(el => el.style.visibility = 'visible');
+                document.getElementById('companyLogo').style.border = ''; 
+            });
+        }
+    </script>
 </body>
 </html>
