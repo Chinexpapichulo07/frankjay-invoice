@@ -6,6 +6,9 @@
     <title>Frankjay Ventures E-Invoice</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
+        /* RESTORED BLUE THEME COLOR */
+        :root { --theme-color: #003366; } 
+        
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
         
         /* Dashboard Controls */
@@ -18,7 +21,7 @@
             font-weight: bold; font-size: 14px; 
         }
         .btn-add { background-color: #28a745; color: white; }
-        .btn-download { background-color: #000; color: white; }
+        .btn-download { background-color: var(--theme-color); color: white; }
 
         /* INVOICE PAPER */
         #invoice-card { 
@@ -26,39 +29,40 @@
             width: 794px; /* A4 Width */
             min-height: 1123px; /* A4 Height */
             margin: 0 auto; 
-            padding: 50px; 
+            padding: 40px; /* Reduced padding slightly to fit everything */
             box-sizing: border-box; 
             border: 1px solid #ccc; 
-            color: black;
+            color: var(--theme-color); /* TEXT IS BLUE AGAIN */
         }
 
         /* Header */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px;}
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--theme-color); padding-bottom: 10px; margin-bottom: 20px;}
         .logo-placeholder-img { max-width: 300px; max-height: 100px; display: block; }
-        .address-area { text-align: right; font-size: 13px; line-height: 1.4; color: #333; }
-
+        .address-area { text-align: right; font-size: 13px; line-height: 1.4; color: black; }
+        
         /* Meta Info */
-        .meta-info { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;}
-        .input-group { font-size: 16px; font-weight: bold; display: flex; align-items: center; flex-grow: 1; margin-right: 20px; }
-        .input-underline { border-bottom: 1px solid #333; flex-grow: 1; margin-left: 10px; }
-        .input-group input { border: none; width: 100%; outline: none; font-size: 16px; font-family: inherit; padding: 5px; font-weight: bold;}
+        .meta-info { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;}
+        .input-group { font-size: 16px; font-weight: bold; display: flex; align-items: center; flex-grow: 1; margin-right: 20px; color: black;}
+        .input-underline { border-bottom: 1px solid var(--theme-color); flex-grow: 1; margin-left: 10px; }
+        .input-group input { border: none; width: 100%; outline: none; font-size: 16px; font-family: inherit; padding: 5px; font-weight: bold; color: black;}
 
         /* TABLE STYLING */
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            table-layout: fixed; /* KEEPS COLUMNS STABLE */
+            table-layout: fixed; 
         }
         
-        /* EXACT COLUMN WIDTHS FROM IMAGE */
+        /* COLUMN WIDTHS */
         .col-sn { width: 50px; text-align: left; padding-left: 10px; }
-        .col-desc { } /* Auto width */
-        .col-amt { width: 180px; text-align: left; } /* Left aligned as per your image */
+        .col-desc { } 
+        .col-amt { width: 180px; text-align: left; } 
         .col-del { width: 30px; border: none !important; }
 
         th { 
-            background-color: #eee; /* Light Gray Header */
-            border: 1px solid #000; 
+            background-color: #eef6fc; /* Light Blue BG */
+            border: 1px solid var(--theme-color); /* Blue Border */
+            color: var(--theme-color);
             padding: 12px; 
             text-align: left; 
             font-weight: bold;
@@ -67,38 +71,62 @@
         }
         
         td { 
-            border: 1px solid #000; 
+            border: 1px solid var(--theme-color); /* Blue Border */
             padding: 12px; 
             vertical-align: middle; 
             font-size: 15px;
+            color: black;
         }
 
         /* INPUTS INSIDE TABLE */
         input.cell-input { width: 100%; border: none; outline: none; font-size: 15px; background: transparent; }
 
-        /* === THE TOTAL ROW FIX === */
-        /* This makes it look exactly like your screenshot */
+        /* === TOTAL ROW (FIXED) === */
+        /* Now has borders and sits inside the column */
         tfoot tr td {
-            border: none !important; /* No borders for the total row */
-            padding-top: 20px;
+            border: 1px solid var(--theme-color) !important; /* Forces border to show */
+            background-color: #eef6fc; /* Light blue background for emphasis */
+            padding-top: 15px;
+            padding-bottom: 15px;
+            color: var(--theme-color);
         }
+
+        /* Remove border for the empty delete column only */
+        tfoot tr td:last-child { border: none !important; background: transparent; }
 
         .total-label { 
             text-align: right; 
-            font-weight: 900; /* Extra Bold */
-            font-size: 22px; 
+            font-weight: 900; 
+            font-size: 20px; 
             padding-right: 15px;
         }
         
         .total-value { 
-            text-align: left; /* Matches the Amount column alignment */
+            text-align: left; 
             font-weight: 900; 
-            font-size: 22px; 
+            font-size: 20px; 
             padding-left: 12px;
         }
 
-        /* Footer Note */
-        .footer-note { margin-top: 80px; font-size: 12px; font-style: italic; color: #000; }
+        /* Footer Note & Signature */
+        .footer-note { 
+            margin-top: 30px; /* Reduced gap (was 80px) */
+            font-size: 13px; 
+            font-style: italic; 
+            color: black; 
+        }
+        
+        .signature-line {
+            margin-top: 50px;
+            border-top: 2px solid var(--theme-color);
+            width: 250px;
+            text-align: center;
+            padding-top: 5px;
+            font-style: normal;
+            font-weight: bold;
+            color: var(--theme-color);
+        }
+
         .delete-btn { color: red; cursor: pointer; font-weight: bold; font-size: 18px; }
     </style>
 </head>
@@ -136,7 +164,8 @@
                 <tr>
                     <th class="col-sn">S/N</th>
                     <th class="col-desc">DESCRIPTION OF GOODS/JOBS</th>
-                    <th class="col-amt">AMOUNT</th> <th class="col-del"></th>
+                    <th class="col-amt">AMOUNT</th> 
+                    <th class="col-del"></th>
                 </tr>
             </thead>
             <tbody>
@@ -162,6 +191,8 @@
         <div class="footer-note">
             Goods sold in good condition are not returnable. <br>
             No refund of money after payment. Thanks.
+
+            <div class="signature-line">Customer's Signature</div>
         </div>
     </div>
 
@@ -213,7 +244,6 @@
             const customerRaw = document.getElementById('customerName').value;
             const customer = customerRaw ? customerRaw.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
             
-            // Hide delete buttons before printing
             const deleteButtons = document.querySelectorAll('.col-del');
             deleteButtons.forEach(el => el.style.visibility = 'hidden');
 
