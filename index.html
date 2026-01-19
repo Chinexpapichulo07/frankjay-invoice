@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frankjay Ventures E-Invoice</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root { --main-color: #000; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; padding: 10px; }
+        
+        /* Dashboard Styling */
+        .controls { 
+            max-width: 800px; margin: 0 auto 20px auto; background: #fff; 
+            padding: 15px; border-radius: 8px; display: flex; gap: 10px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button { 
+            padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; 
+            font-weight: bold; font-size: 16px;
+        }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-download { background-color: #007bff; color: white; }
+
+        /* Invoice Paper Styling */
+        #invoice-card { 
+            background: white; width: 210mm; min-height: 140mm; 
+            margin: 0 auto; padding: 40px; box-sizing: border-box; 
+            border: 1px solid #ddd; position: relative;
+        }
+        .header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--main-color); padding-bottom: 10px; }
+        .logo-area h1 { margin: 0; font-size: 32px; letter-spacing: 1px; }
+        .logo-area p { margin: 0; font-size: 14px; font-weight: bold; }
+        .address-area { text-align: right; font-size: 12px; line-height: 1.4; }
+
+        .meta-info { margin-top: 20px; display: flex; justify-content: space-between; }
+        .input-group { font-size: 18px; font-weight: bold; border-bottom: 1px solid #000; flex-grow: 1; margin-right: 20px; }
+        .input-group input { border: none; width: 80%; outline: none; font-size: 18px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #eee; border: 1px solid #000; padding: 10px; text-align: left; }
+        td { border: 1px solid #000; padding: 8px; }
+        .col-sn { width: 50px; }
+        .col-amt { width: 150px; text-align: right; }
+        
+        input.cell-input { width: 100%; border: none; outline: none; background: transparent; font-size: 16px; }
+        .total-section { text-align: right; margin-top: 20px; font-size: 22px; font-weight: bold; }
+        
+        .footer-note { margin-top: 30px; font-size: 12px; font-style: italic; border-top: 1px solid #eee; padding-top: 10px; }
+        
+        /* Hide buttons during PDF generation */
+        .no-print-cell { border: none !important; width: 30px; }
+        .delete-btn { color: red; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button class="btn-add" onclick="addRow()">+ Add New Item</button>
+        <button class="btn-download" onclick="generatePDF()">Download & Send PDF</button>
+    </div>
+
+    <div id="invoice-card">
+        <div class="header">
+            <div class="logo-area">
+                <h1>FRANKJAY VENTURES</h1>
+                <p>Computers, Communications, Office Equipment & Contractors</p>
+            </div>
+            <div class="address-area">
+                9, Adepele Street, Off Simbiat Abiola Way,<br>
+                Ikeja, Lagos.<br>
+                Tel: 080-2314-3506, 070-5512-0916<br>
+                Email: frankjayventures@yahoo.com
+            </div>
+        </div>
+
+        <div class="meta-info">
+            <div class="input-group">M: <input type="text" id="customerName" placeholder="Enter Customer Name"></div>
+            <div style="font-weight: bold;">Date: <input type="date" id="invDate"></div>
+        </div>
+
+        <table id="itemsTable">
+            <thead>
+                <tr>
+                    <th class="col-sn">S/N</th>
+                    <th>DESCRIPTION OF GOODS/JOBS</th>
+                    <th class="col-amt">AMOUNT (₦)</th>
+                    <th class="no-print-cell"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><input type="text" class="cell-input" placeholder="Type item description..."></td>
+                    <td><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0"></td>
+                    <td class="no-print-cell"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            TOTAL ₦ <span id="grandTotal">0</span>
+        </div>
+
+        <div class="footer-note">
+            Goods sold in good condition are not returnable. <br>
+            No refund of money after payment. Thanks.
+        </div>
+    </div>
+
+    <script>
+        // Set default date to today
+        document.getElementById('invDate').valueAsDate = new Date();
+
+        function addRow() {
+            const table = document.getElementById("itemsTable").getElementsByTagName('tbody')[0];
+            const rowCount = table.rows.length;
+            const row = table.insertRow(rowCount);
+            
+            row.innerHTML = `
+                <td>${rowCount + 1}</td>
+                <td><input type="text" class="cell-input"></td>
+                <td><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0"></td>
+                <td class="no-print-cell"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
+            `;
+        }
+
+        function deleteRow(btn) {
+            const row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            calculateTotal();
+            reorderSN();
+        }
+
+        function reorderSN() {
+            const rows = document.getElementById("itemsTable").getElementsByTagName('tbody')[0].rows;
+            for(let i=0; i<rows.length; i++) {
+                rows[i].cells[0].innerHTML = i + 1;
+            }
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            const inputs = document.querySelectorAll('.amt-input');
+            inputs.forEach(input => {
+                total += Number(input.value) || 0;
+            });
+            document.getElementById('grandTotal').innerText = total.toLocaleString();
+        }
+
+        function generatePDF() {
+            const element = document.getElementById('invoice-card');
+            const customer = document.getElementById('customerName').value || 'Customer';
+            
+            // Hide delete buttons for PDF
+            const deleteButtons = document.querySelectorAll('.no-print-cell');
+            deleteButtons.forEach(el => el.style.display = 'none');
+
+            const opt = {
+                margin: 10,
+                filename: `Invoice_${customer}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Show delete buttons again after saving
+                deleteButtons.forEach(el => el.style.display = '');
+            });
+        }
+    </script>
+</body>
+</html>
