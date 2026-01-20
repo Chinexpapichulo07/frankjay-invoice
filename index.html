@@ -32,33 +32,54 @@
             padding: 40px; /* Reduced padding slightly to fit everything */
             box-sizing: border-box; 
             border: 1px solid #ccc; 
-            color: var(--theme-color); /* TEXT IS BLUE AGAIN */
+            color: var(--theme-color); /* default TEXT COLOR */
         }
 
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--theme-color); padding-bottom: 10px; margin-bottom: 10px;}
-        .logo-placeholder-img { max-width: 300px; max-height: 100px; display: block; }
-        .address-area { text-align: right; font-size: 13px; line-height: 1.4; color: black; }
-        
-        /* Invoice Title & Subtitle */
+        /* Header Top (logo + title) */
+        .header-top { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            border-bottom: 3px solid var(--theme-color); 
+            padding-bottom: 10px; 
+            margin-bottom: 8px;
+        }
+        .logo-and-title { display:flex; gap:18px; align-items:center; }
+        .logo-placeholder-img { max-width: 140px; max-height: 80px; display: block; }
         .invoice-title {
-            text-align: center;
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 900;
-            color: var(--theme-color);
-            margin-top: 12px;
+            color: var(--theme-color); /* will be overridden by sampled logo color if possible */
             letter-spacing: 1px;
             text-transform: uppercase;
+            line-height: 1.05;
         }
         .invoice-subtitle {
-            text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             color: black;
             margin-top: 6px;
-            margin-bottom: 18px;
+            font-weight: 600;
         }
 
-        /* Meta Info */
+        /* Invoice No (top-right inside header-top) */
+        .invoice-no {
+            text-align: right;
+            font-weight: bold;
+        }
+        .invoice-no .input-underline { border-bottom: 1px solid var(--theme-color); margin-left: 8px; display:inline-block; }
+        .invoice-no input { border: none; outline: none; padding: 4px 6px; font-weight: bold; font-size: 14px; font-family: inherit; background: transparent; color: #222; }
+        .invoice-no input[readonly] { color: #333; opacity: 0.95; cursor: default; }
+
+        /* Address area moved below the line but right-aligned */
+        .address-area {
+            text-align: right; 
+            font-size: 13px; 
+            line-height: 1.4; 
+            color: black; 
+            margin-bottom: 14px;
+        }
+        
+        /* Meta Info (customer, date, etc) */
         .meta-info { margin-top: 0; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 12px;}
         .input-group { font-size: 16px; font-weight: bold; display: flex; align-items: center; flex-grow: 1; margin-right: 20px; color: black;}
         .input-underline { border-bottom: 1px solid var(--theme-color); flex-grow: 1; margin-left: 10px; }
@@ -151,6 +172,9 @@
         /* Responsive minor adjustments */
         @media (max-width: 820px) {
             #invoice-card { width: 100%; padding: 20px; }
+            .header-top { flex-direction: column; align-items: stretch; }
+            .logo-and-title { justify-content: space-between; }
+            .invoice-no { text-align: left; margin-top: 10px; }
             .meta-info { flex-direction: column; align-items: stretch; gap: 8px; }
             .meta-right { justify-content: space-between; }
         }
@@ -164,21 +188,31 @@
     </div>
 
     <div id="invoice-card">
-        <div class="header">
-            <div class="logo-area">
-                <img src="frankjayv-logo.png" alt="Frankjay Ventures" class="logo-placeholder-img" onerror="this.style.display='none'">
+        <div class="header-top">
+            <div class="logo-and-title">
+                <div class="logo-area">
+                    <img src="frankjayv-logo.png" alt="Frankjay Ventures" class="logo-placeholder-img" onerror="this.style.display='none'">
+                </div>
+                <div>
+                    <div class="invoice-title">FRANKJAY VENTURES E-INVOICE</div>
+                    <div class="invoice-subtitle">Computers, Communications, Office Equipment &amp; Contractors</div>
+                </div>
             </div>
-            <div class="address-area">
-                9, Adepele Street, Off Simbiat Abiola Way,<br>
-                Ikeja, Lagos.<br>
-                Tel: 080-2314-3506, 070-5512-0916<br>
-                Email: frankjayventures@yahoo.com
+
+            <div class="invoice-no" title="Automatically generated; read-only">
+                <div style="font-size:12px;color:#444;">Invoice No.</div>
+                <div class="input-underline">
+                    <input type="text" id="invoiceNo" readonly aria-readonly="true" placeholder="INV-YYYYMMDD-0001">
+                </div>
             </div>
         </div>
 
-        <!-- Prominent Title and Subtitle -->
-        <div class="invoice-title">FRANKJAY VENTURES E-INVOICE</div>
-        <div class="invoice-subtitle">Computers, Communications, Office Equipment &amp; Contractors</div>
+        <div class="address-area">
+            9, Adepele Street, Off Simbiat Abiola Way,<br>
+            Ikeja, Lagos.<br>
+            Tel: 080-2314-3506, 070-5512-0916<br>
+            Email: frankjayventures@yahoo.com
+        </div>
 
         <div class="meta-info">
             <div class="input-group">
@@ -186,10 +220,6 @@
             </div>
 
             <div class="meta-right">
-                <div class="input-group" style="flex-grow:0;">
-                    Invoice No: <div class="input-underline"><input type="text" id="invoiceNo" placeholder="INV-0001"></div>
-                </div>
-
                 <div class="input-group" style="flex-grow: 0;">
                     Date: <div class="input-underline"><input type="date" id="invDate"></div>
                 </div>
@@ -237,14 +267,100 @@
         (function init() {
             const invDate = document.getElementById('invDate');
             const today = new Date();
-            // valueAsDate is convenient but not supported everywhere
             if ('valueAsDate' in invDate) {
                 invDate.valueAsDate = today;
             } else {
                 invDate.value = today.toISOString().slice(0,10);
             }
             calculateTotal();
+            // set invoice number (read-only, auto-generated)
+            setAutoInvoiceNumber();
+            // attempt to sample logo color and apply to title
+            setTitleColorFromLogo();
         })();
+
+        // Auto-invoice number: format INV-YYYYMMDD-0001, increments per day and persists in localStorage
+        function setAutoInvoiceNumber() {
+            const input = document.getElementById('invoiceNo');
+            if (!input) return;
+
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            const dateKey = `${y}${m}${d}`; // YYYYMMDD
+
+            let counter = 1;
+            try {
+                const lastDate = localStorage.getItem('frankjay_invoice_lastDate');
+                const lastCounter = parseInt(localStorage.getItem('frankjay_invoice_counter') || '0', 10);
+                if (lastDate === dateKey && Number.isFinite(lastCounter) && lastCounter > 0) {
+                    counter = lastCounter + 1;
+                } else {
+                    counter = 1;
+                }
+                // store updates
+                localStorage.setItem('frankjay_invoice_lastDate', dateKey);
+                localStorage.setItem('frankjay_invoice_counter', String(counter));
+            } catch (e) {
+                // localStorage might be unavailable (privacy mode) - fallback to timestamp-based id
+                console.warn('localStorage unavailable; using timestamp fallback for invoice number.', e);
+                const ts = Date.now().toString().slice(-6);
+                input.value = `INV-${dateKey}-${ts}`;
+                return;
+            }
+
+            const suffix = String(counter).padStart(4, '0');
+            input.value = `INV-${dateKey}-${suffix}`;
+        }
+
+        function setTitleColorFromLogo() {
+            const img = document.querySelector('.logo-placeholder-img');
+            const titleEl = document.querySelector('.invoice-title');
+            if (!img || !titleEl) return;
+            function sample() {
+                try {
+                    // small canvas for averaging
+                    const canvas = document.createElement('canvas');
+                    const size = 40;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    // draw the image scaled
+                    ctx.drawImage(img, 0, 0, size, size);
+                    const data = ctx.getImageData(0, 0, size, size).data;
+                    let r = 0, g = 0, b = 0, count = 0;
+                    // sample every 4th pixel to save time
+                    for (let i = 0; i < data.length; i += 16) {
+                        const alpha = data[i + 3];
+                        if (alpha === 0) continue;
+                        r += data[i];
+                        g += data[i + 1];
+                        b += data[i + 2];
+                        count++;
+                    }
+                    if (count > 0) {
+                        r = Math.round(r / count);
+                        g = Math.round(g / count);
+                        b = Math.round(b / count);
+                        const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+                        titleEl.style.color = hex;
+                    }
+                } catch (e) {
+                    // Could be due to CORS / tainted canvas - fallback to theme color
+                    console.warn('Could not sample logo color (CORS or other). Using theme color.', e);
+                }
+            }
+
+            if (img.complete) {
+                sample();
+            } else {
+                img.addEventListener('load', sample);
+                img.addEventListener('error', () => {
+                    // ignore - fallback color will remain
+                });
+            }
+        }
 
         function addRow() {
             const tbody = document.getElementById("itemsTable").getElementsByTagName('tbody')[0];
@@ -294,7 +410,7 @@
             const customerRaw = document.getElementById('customerName').value;
             const invoiceNoRaw = document.getElementById('invoiceNo').value;
             const customer = customerRaw ? customerRaw.replace(/[^a-zA-Z0-9]/g, '_').slice(0,50) : 'Customer';
-            const invoiceSafe = invoiceNoRaw ? invoiceNoRaw.replace(/[^a-zA-Z0-9]/g, '_').slice(0,30) : '';
+            const invoiceSafe = invoiceNoRaw ? invoiceNoRaw.replace(/[^a-zA-Z0-9]/g, '_').slice(0,60) : '';
             const filenameSuffix = invoiceSafe ? `_${invoiceSafe}` : '';
             
             // hide only the delete icons so layout doesn't shift
