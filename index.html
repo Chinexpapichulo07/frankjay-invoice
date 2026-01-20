@@ -172,7 +172,7 @@
                 <tr>
                     <td class="col-sn">1</td>
                     <td class="col-desc"><input type="text" class="cell-input" placeholder="Item description"></td>
-                    <td class="col-amt"><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0"></td>
+                    <td class="col-amt"><input type="number" step="0.01" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0"></td>
                     <td class="col-del"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
                 </tr>
             </tbody>
@@ -197,7 +197,17 @@
     </div>
 
     <script>
-        document.getElementById('invDate').valueAsDate = new Date();
+        (function init() {
+            const invDate = document.getElementById('invDate');
+            const today = new Date();
+            // valueAsDate is convenient but not supported everywhere
+            if ('valueAsDate' in invDate) {
+                invDate.valueAsDate = today;
+            } else {
+                invDate.value = today.toISOString().slice(0,10);
+            }
+            calculateTotal();
+        })();
 
         function addRow() {
             const tbody = document.getElementById("itemsTable").getElementsByTagName('tbody')[0];
@@ -206,8 +216,8 @@
             
             row.innerHTML = `
                 <td class="col-sn">${rowCount + 1}</td>
-                <td class="col-desc"><input type="text" class="cell-input"></td>
-                <td class="col-amt"><input type="number" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0"></td>
+                <td class="col-desc"><input type="text" class="cell-input" placeholder="Item description"></td>
+                <td class="col-amt"><input type="number" step="0.01" class="cell-input amt-input" oninput="calculateTotal()" placeholder="0"></td>
                 <td class="col-del"><span class="delete-btn" onclick="deleteRow(this)">×</span></td>
             `;
         }
@@ -215,10 +225,10 @@
         function deleteRow(btn) {
             const row = btn.parentNode.parentNode;
             const tbody = row.parentNode;
-            if(tbody.rows.length > 1) {
+            if (tbody.rows.length > 1) {
                 tbody.removeChild(row);
-                calculateTotal();
                 reorderSN();
+                calculateTotal();
             }
         }
 
@@ -233,19 +243,23 @@
             let total = 0;
             const inputs = document.querySelectorAll('.amt-input');
             inputs.forEach(input => {
-                const val = parseFloat(input.value);
+                // remove thousands separators/commas before parsing
+                const raw = (input.value || '').toString().replace(/,/g, '').trim();
+                const val = parseFloat(raw);
                 total += isNaN(val) ? 0 : val;
             });
-            document.getElementById('grandTotal').innerText = total.toLocaleString();
+            // show up to 2 decimal places, localized
+            document.getElementById('grandTotal').innerText = total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
         }
 
         function generatePDF() {
             const element = document.getElementById('invoice-card');
             const customerRaw = document.getElementById('customerName').value;
-            const customer = customerRaw ? customerRaw.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
+            const customer = customerRaw ? customerRaw.replace(/[^a-zA-Z0-9]/g, '_').slice(0,50) : 'Customer';
             
-            const deleteButtons = document.querySelectorAll('.col-del');
-            deleteButtons.forEach(el => el.style.visibility = 'hidden');
+            // hide only the delete icons so layout doesn't shift
+            const deleteBtns = Array.from(document.querySelectorAll('.delete-btn'));
+            deleteBtns.forEach(el => el.style.display = 'none');
 
             const opt = {
                 margin: 0,
@@ -255,9 +269,28 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                deleteButtons.forEach(el => el.style.visibility = 'visible');
-            });
+            try {
+                const exportTask = html2pdf().set(opt).from(element).save();
+
+                // html2pdf may return a Promise in some versions — handle both cases
+                if (exportTask && typeof exportTask.then === 'function') {
+                    exportTask.then(() => {
+                        deleteBtns.forEach(el => el.style.display = '');
+                    }).catch(() => {
+                        // ensure restore on failure
+                        deleteBtns.forEach(el => el.style.display = '');
+                    });
+                } else {
+                    // fallback: restore after short delay
+                    setTimeout(() => {
+                        deleteBtns.forEach(el => el.style.display = '');
+                    }, 1000);
+                }
+            } catch (e) {
+                // always restore on error
+                deleteBtns.forEach(el => el.style.display = '');
+                console.error('PDF generation failed', e);
+            }
         }
     </script>
 </body>
